@@ -22,6 +22,8 @@ from qbsdk.CompanyActivityQuery import CompanyActivityQueryRq, CompanyActivityQu
 from qbsdk.CurrencyQuery import CurrencyQueryRq, CurrencyQueryRs, Base as CurrencyBase
 from qbsdk.CustomerMsgQuery import CustomerMsgQueryRq, CustomerMsgQueryRs, Base as CustomerMsgBase
 from qbsdk.CustomerTypeQuery import CustomerTypeQueryRq, CustomerTypeQueryRs, Base as CustomerTypeBase
+from qbsdk.DepositQuery import DepositQueryRq, DepositQueryRs, Base as DepositBase
+from qbsdk.EmployeeQuery import EmployeeQueryRq, EmployeeQueryRs, Base as EmployeeBase
 
 
 def connect_to_quickbooks():
@@ -455,6 +457,48 @@ def test_customer_type_object():
     close_connection(session_manager, ticket)
 
 
+def test_deposit_object():
+    depositQuery = DepositQueryRq()
+    print("Requesting Deposit: \n", depositQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, depositQuery.to_xml())
+    print(response)
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    depositQuery.from_response_xml(response)
+    print("Deposit Objects: \n", depositQuery.deposits)
+    DepositBase.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for deposit in depositQuery.deposits:
+        debug_session.add(deposit)
+    debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
+
+
+def test_employee_object():
+    employeeQuery = EmployeeQueryRq()
+    print("Requesting Employee: \n", employeeQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, employeeQuery.to_xml())
+    print(response)
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    employeeQuery.from_response_xml(response)
+    print("Employee Objects: \n", employeeQuery.employees)
+    EmployeeBase.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for employee in employeeQuery.employees:
+        debug_session.add(employee)
+    debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Export QuickBooks SDK data to SQLite", add_help=False)
     parser.add_argument('-raw', action='store_true', help='Export raw data as is.')
@@ -475,6 +519,8 @@ def main():
     parser.add_argument('-testcurrency', action='store_true', help='Test Currency object.')
     parser.add_argument('-testcustmsg', action='store_true', help='Test Customer Message object.')
     parser.add_argument('-testcusttype', action='store_true', help='Test Customer Type object.')
+    parser.add_argument('-testdeposit', action='store_true', help='Test Deposit object.')
+    parser.add_argument('-testemployee', action='store_true', help='Test Employee object.')
     args = parser.parse_args()
 
     if args.help:
@@ -500,6 +546,8 @@ Options:
   -testcurrency Test Currency object.
   -testcustmsg Test Customer Message object.
   -testcusttype Test Customer Type object.
+  -testdeposit Test Deposit object.
+  -testemployee Test Employee object.
         """)
         return
 
@@ -553,6 +601,14 @@ Options:
 
     if args.testcusttype:
         test_customer_type_object()
+        return
+
+    if args.testdeposit:
+        test_deposit_object()
+        return
+
+    if args.testemployee:
+        test_employee_object()
         return
 
     session_manager, ticket = connect_to_quickbooks()
