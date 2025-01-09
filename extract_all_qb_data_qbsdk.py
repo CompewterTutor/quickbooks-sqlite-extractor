@@ -24,6 +24,7 @@ from qbsdk.CustomerMsgQuery import CustomerMsgQueryRq, CustomerMsgQueryRs, Base 
 from qbsdk.CustomerTypeQuery import CustomerTypeQueryRq, CustomerTypeQueryRs, Base as CustomerTypeBase
 from qbsdk.DepositQuery import DepositQueryRq, DepositQueryRs, Base as DepositBase
 from qbsdk.EmployeeQuery import EmployeeQueryRq, EmployeeQueryRs, Base as EmployeeBase
+from qbsdk.EntityQuery import EntityQueryRq, EntityQueryRs, Base as EntityBase
 
 
 def connect_to_quickbooks():
@@ -499,6 +500,27 @@ def test_employee_object():
     close_connection(session_manager, ticket)
 
 
+def test_entity_object():
+    entityQuery = EntityQueryRq()
+    print("Requesting Entity: \n", entityQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, entityQuery.to_xml())
+    print(response)
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    entityQuery.from_response_xml(response)
+    print("Entity Objects: \n", entityQuery.entities)
+    EntityBase.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for entity in entityQuery.entities:
+        debug_session.add(entity)
+    debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Export QuickBooks SDK data to SQLite", add_help=False)
     parser.add_argument('-raw', action='store_true', help='Export raw data as is.')
@@ -521,6 +543,7 @@ def main():
     parser.add_argument('-testcusttype', action='store_true', help='Test Customer Type object.')
     parser.add_argument('-testdeposit', action='store_true', help='Test Deposit object.')
     parser.add_argument('-testemployee', action='store_true', help='Test Employee object.')
+    parser.add_argument('-testentity', action='store_true', help='Test Entity object.')
     args = parser.parse_args()
 
     if args.help:
@@ -548,6 +571,7 @@ Options:
   -testcusttype Test Customer Type object.
   -testdeposit Test Deposit object.
   -testemployee Test Employee object.
+  -testentity Test Entity object.
         """)
         return
 
@@ -609,6 +633,10 @@ Options:
 
     if args.testemployee:
         test_employee_object()
+        return
+
+    if args.testentity:
+        test_entity_object()
         return
 
     session_manager, ticket = connect_to_quickbooks()
