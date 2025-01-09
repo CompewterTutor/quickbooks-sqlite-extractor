@@ -164,6 +164,22 @@ def test_connection():
     except Exception as e:
         print(f"Failed to connect to QuickBooks: {e}")
 
+def test_quickbooks_query():
+    """Test QuickBooks query."""
+    session_manager, ticket = connect_to_quickbooks()
+    query = """<?xml version="1.0" ?>
+    <?qbxml version="16.0"?>
+    <QBXML>
+        <QBXMLMsgsRq onError="stopOnError">
+            <CustomerQueryRq>
+                <OwnerID>0</OwnerID>
+            </CustomerQueryRq>
+        </QBXMLMsgsRq>
+    </QBXML>"""
+    response = query_quickbooks(session_manager, ticket, query)
+    print(response)
+    close_connection(session_manager, ticket)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Export QuickBooks SDK data to SQLite", add_help=False)
@@ -172,6 +188,7 @@ def main():
     parser.add_argument('-both', action='store_true', help='Export both raw and 1NF data into separate files.')
     parser.add_argument('-testconn', action='store_true', help='Test connection to QuickBooks.')
     parser.add_argument('-help', action='store_true', help='Show usage information.')
+    parser.add_argument('-testquery', action='store_true', help='Test QuickBooks query.')
     args = parser.parse_args()
 
     if args.help:
@@ -202,6 +219,8 @@ Options:
         conn = sqlite3.connect('quickbooks_1nf_data.db')
         export_all_data(session_manager, ticket, conn, normalize=True)
         conn.close()
+    if args.testquery:
+        test_quickbooks_query()
 
     close_connection(session_manager, ticket)
 
