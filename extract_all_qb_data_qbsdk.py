@@ -1,8 +1,9 @@
-import win32com.client  # COM interface
 import sqlite3
 from lxml import etree
 import argparse
 import os
+
+import win32com.client  # COM interface
 
 
 def connect_to_quickbooks():
@@ -154,11 +155,22 @@ def export_all_data(session_manager, ticket, sqlite_conn, normalize=False):
         normalize_transactions(session_manager, ticket, sqlite_conn)
 
 
+def test_connection():
+    """Test connection to QuickBooks."""
+    try:
+        session_manager, ticket = connect_to_quickbooks()
+        close_connection(session_manager, ticket)
+        print("Connection to QuickBooks successful.")
+    except Exception as e:
+        print(f"Failed to connect to QuickBooks: {e}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Export QuickBooks SDK data to SQLite", add_help=False)
     parser.add_argument('-raw', action='store_true', help='Export raw data as is.')
-    parser.add_argument('-1nf', action='store_true', help='Export data in normalized first normal form.')
+    parser.add_argument('-nf', action='store_true', help='Export data in normalized first normal form.')
     parser.add_argument('-both', action='store_true', help='Export both raw and 1NF data into separate files.')
+    parser.add_argument('-testconn', action='store_true', help='Test connection to QuickBooks.')
     parser.add_argument('-help', action='store_true', help='Show usage information.')
     args = parser.parse_args()
 
@@ -168,10 +180,15 @@ Usage: python export_qb_sdk_to_sqlite.py [OPTIONS]
 
 Options:
   -raw         Export raw QuickBooks data as-is to a SQLite database.
-  -1nf         Export QuickBooks data normalized to First Normal Form (1NF).
+  -nf         Export QuickBooks data normalized to First Normal Form (1NF).
   -both        Export both raw and 1NF data into two separate SQLite databases.
+  -testconn    Test connection to QuickBooks.
   -help        Show this usage information.
         """)
+        return
+
+    if args.testconn:
+        test_connection()
         return
 
     session_manager, ticket = connect_to_quickbooks()
@@ -181,7 +198,7 @@ Options:
         export_all_data(session_manager, ticket, conn, normalize=False)
         conn.close()
 
-    if args._1nf or args.both:
+    if args.nf or args.both:
         conn = sqlite3.connect('quickbooks_1nf_data.db')
         export_all_data(session_manager, ticket, conn, normalize=True)
         conn.close()
