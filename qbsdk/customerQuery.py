@@ -241,6 +241,12 @@ from enum import Enum
 from typing import List, Optional
 from datetime import datetime
 
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String
+
 class ActiveStatus(Enum):
     ACTIVE_ONLY = "ActiveOnly"
     INACTIVE_ONLY = "InactiveOnly"
@@ -319,48 +325,99 @@ class CustomerQueryRq:
         self.include_ret_element = include_ret_element
         self.owner_id = owner_id
 
-class CustomerRet:
-    def __init__(self, list_id: str, time_created: datetime, time_modified: datetime, edit_sequence: str, name: str, full_name: str, is_active: Optional[bool] = None,
-                 sublevel: int = 0, company_name: Optional[str] = None, salutation: Optional[str] = None, first_name: Optional[str] = None, middle_name: Optional[str] = None,
-                 last_name: Optional[str] = None, job_title: Optional[str] = None, phone: Optional[str] = None, alt_phone: Optional[str] = None, fax: Optional[str] = None,
-                 email: Optional[str] = None, cc: Optional[str] = None, contact: Optional[str] = None, alt_contact: Optional[str] = None, balance: Optional[float] = None,
-                 total_balance: Optional[float] = None, resale_number: Optional[str] = None, account_number: Optional[str] = None, credit_limit: Optional[float] = None,
-                 job_status: Optional[JobStatus] = None, job_start_date: Optional[datetime] = None, job_projected_end_date: Optional[datetime] = None, job_end_date: Optional[datetime] = None,
-                 job_desc: Optional[str] = None, notes: Optional[str] = None, external_guid: Optional[str] = None, tax_registration_number: Optional[str] = None):
-        self.list_id = list_id
-        self.time_created = time_created
-        self.time_modified = time_modified
-        self.edit_sequence = edit_sequence
-        self.name = name
-        self.full_name = full_name
-        self.is_active = is_active
-        self.sublevel = sublevel
-        self.company_name = company_name
-        self.salutation = salutation
-        self.first_name = first_name
-        self.middle_name = middle_name
-        self.last_name = last_name
-        self.job_title = job_title
-        self.phone = phone
-        self.alt_phone = alt_phone
-        self.fax = fax
-        self.email = email
-        self.cc = cc
-        self.contact = contact
-        self.alt_contact = alt_contact
-        self.balance = balance
-        self.total_balance = total_balance
-        self.resale_number = resale_number
-        self.account_number = account_number
-        self.credit_limit = credit_limit
-        self.job_status = job_status
-        self.job_start_date = job_start_date
-        self.job_projected_end_date = job_projected_end_date
-        self.job_end_date = job_end_date
-        self.job_desc = job_desc
-        self.notes = notes
-        self.external_guid = external_guid
-        self.tax_registration_number = tax_registration_number
+from sqlalchemy import create_engine, Column, String, Integer, Float, Boolean, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+Base = declarative_base()
+
+from lxml import etree
+
+class CustomerRet(Base):
+    __tablename__ = 'CustomerRet'
+
+    list_id = Column(String, primary_key=True)
+    time_created = Column(DateTime)
+    time_modified = Column(DateTime)
+    edit_sequence = Column(String)
+    name = Column(String)
+    full_name = Column(String)
+    is_active = Column(Boolean, nullable=True)
+    sublevel = Column(Integer)
+    company_name = Column(String, nullable=True)
+    salutation = Column(String, nullable=True)
+    first_name = Column(String, nullable=True)
+    middle_name = Column(String, nullable=True)
+    last_name = Column(String, nullable=True)
+    job_title = Column(String, nullable=True)
+    phone = Column(String, nullable=True)
+    alt_phone = Column(String, nullable=True)
+    fax = Column(String, nullable=True)
+    email = Column(String, nullable=True)
+    cc = Column(String, nullable=True)
+    contact = Column(String, nullable=True)
+    alt_contact = Column(String, nullable=True)
+    balance = Column(Float, nullable=True)
+    total_balance = Column(Float, nullable=True)
+    resale_number = Column(String, nullable=True)
+    account_number = Column(String, nullable=True)
+    credit_limit = Column(Float, nullable=True)
+    job_status = Column(String, nullable=True)
+    job_start_date = Column(DateTime, nullable=True)
+    job_projected_end_date = Column(DateTime, nullable=True)
+    job_end_date = Column(DateTime, nullable=True)
+    job_desc = Column(String, nullable=True)
+    notes = Column(String, nullable=True)
+    external_guid = Column(String, nullable=True)
+    tax_registration_number = Column(String, nullable=True)
+
+    @staticmethod
+    def from_xml(xml_str: str):
+        root = etree.fromstring(xml_str.encode('utf-8'))
+        customer_ret = root.find('.//CustomerRet')
+        if customer_ret is None:
+            return None
+
+        def get_text(element, tag):
+            child = element.find(tag)
+            return child.text if child is not None else None
+
+        return CustomerRet(
+            list_id=get_text(customer_ret, 'ListID'),
+            time_created=datetime.fromisoformat(get_text(customer_ret, 'TimeCreated')),
+            time_modified=datetime.fromisoformat(get_text(customer_ret, 'TimeModified')),
+            edit_sequence=get_text(customer_ret, 'EditSequence'),
+            name=get_text(customer_ret, 'Name'),
+            full_name=get_text(customer_ret, 'FullName'),
+            is_active=get_text(customer_ret, 'IsActive') == 'true',
+            sublevel=int(get_text(customer_ret, 'Sublevel')),
+            company_name=get_text(customer_ret, 'CompanyName'),
+            salutation=get_text(customer_ret, 'Salutation'),
+            first_name=get_text(customer_ret, 'FirstName'),
+            middle_name=get_text(customer_ret, 'MiddleName'),
+            last_name=get_text(customer_ret, 'LastName'),
+            job_title=get_text(customer_ret, 'JobTitle'),
+            phone=get_text(customer_ret, 'Phone'),
+            alt_phone=get_text(customer_ret, 'AltPhone'),
+            fax=get_text(customer_ret, 'Fax'),
+            email=get_text(customer_ret, 'Email'),
+            cc=get_text(customer_ret, 'Cc'),
+            contact=get_text(customer_ret, 'Contact'),
+            alt_contact=get_text(customer_ret, 'AltContact'),
+            balance=float(get_text(customer_ret, 'Balance')) if get_text(customer_ret, 'Balance') else None,
+            total_balance=float(get_text(customer_ret, 'TotalBalance')) if get_text(customer_ret, 'TotalBalance') else None,
+            resale_number=get_text(customer_ret, 'ResaleNumber'),
+            account_number=get_text(customer_ret, 'AccountNumber'),
+            credit_limit=float(get_text(customer_ret, 'CreditLimit')) if get_text(customer_ret, 'CreditLimit') else None,
+            job_status=get_text(customer_ret, 'JobStatus'),
+            job_start_date=datetime.fromisoformat(get_text(customer_ret, 'JobStartDate')) if get_text(customer_ret, 'JobStartDate') else None,
+            job_projected_end_date=datetime.fromisoformat(get_text(customer_ret, 'JobProjectedEndDate')) if get_text(customer_ret, 'JobProjectedEndDate') else None,
+            job_end_date=datetime.fromisoformat(get_text(customer_ret, 'JobEndDate')) if get_text(customer_ret, 'JobEndDate') else None,
+            job_desc=get_text(customer_ret, 'JobDesc'),
+            notes=get_text(customer_ret, 'Notes'),
+            external_guid=get_text(customer_ret, 'ExternalGUID'),
+            tax_registration_number=get_text(customer_ret, 'TaxRegistrationNumber')
+        )
 
 class CustomerQueryRs:
     def __init__(self, status_code: int, status_severity: str, status_message: str, ret_count: int, iterator_remaining_count: Optional[int] = None, iterator_id: Optional[str] = None,
@@ -416,6 +473,9 @@ def create_customer_table_if_not_exists(conn: sqlite3.Connection):
         )
     ''')
     conn.commit()
+
+def create_customer_table_if_not_exists(engine):
+    Base.metadata.create_all(engine)
 
 def generate_customer_query_xml(query: CustomerQueryRq) -> str:
     xml = f'''<?xml version="1.0" encoding="utf-8"?>
