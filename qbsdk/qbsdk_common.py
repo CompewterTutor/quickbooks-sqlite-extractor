@@ -24,3 +24,4 @@ def query_quickbooks(session_manager, ticket, request_xml):
     """Send qbXML request and get a response."""
     response = session_manager.ProcessRequest(ticket, request_xml)
     return response
+

@@ -11,6 +11,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, ForeignKey, Float
 
 from qbsdk.customerQuery import CustomerQueryRq, CustomerQueryRs, Base
+from qbsdk.AccountQuery import AccountQueryRq, AccountQueryRs, Base as AccountBase
 
 
 def connect_to_quickbooks():
@@ -36,14 +37,13 @@ def query_quickbooks(session_manager, ticket, request_xml):
 
 def test_customer_object():
     customerQuery = CustomerQueryRq()
-    customerQuery.max_returned = 5
+    #customerQuery.max_returned = 5
     customerQuery.owner_id = 0
     print("Requesting Customer: \n", customerQuery.to_xml())
     # Connect to quickbooks and send xml
     session_manager, ticket = connect_to_quickbooks()
     response = query_quickbooks(session_manager, ticket, customerQuery.to_xml())
     print(response)
-    
     debug_engine = create_engine('sqlite:///debug.db', echo=True)
     customerQuery.from_response_xml(response)
     print("Customer Objects: \n", customerQuery.customers)
@@ -53,10 +53,30 @@ def test_customer_object():
     debug_session = DebugSession()
     for customer in customerQuery.customers:
         debug_session.add(customer)
-        debug_session.commit()
+    debug_session.commit()
     debug_session.close()
     close_connection(session_manager, ticket)
 
+
+def test_account_object():
+    accountQuery = AccountQueryRq()
+    print("Requesting Account: \n", accountQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, accountQuery.to_xml())
+    print(response)
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    accountQuery.from_response_xml(response)
+    print("Account Objects: \n", accountQuery.accounts)
+    AccountBase.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for account in accountQuery.accounts:
+        debug_session.add(account)
+    debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
 
 
 def export_table_raw(session_manager, ticket, table_name, query_xml, sqlite_conn):
@@ -224,6 +244,7 @@ def main():
     parser.add_argument('-help', action='store_true', help='Show usage information.')
     parser.add_argument('-testquery', action='store_true', help='Test QuickBooks query.')
     parser.add_argument('-testcustomer', action='store_true', help='Test Customer object.')
+    parser.add_argument('-testaccount', action='store_true', help='Test Account object.')
     args = parser.parse_args()
 
     if args.help:
@@ -238,6 +259,7 @@ Options:
   -help        Show this usage information.
   -testquery   Test QuickBooks query.
   -testcustomer Test Customer object.
+  -testaccount Test Account object.
         """)
         return
 
@@ -247,6 +269,10 @@ Options:
 
     if args.testcustomer:
         test_customer_object()
+        return
+
+    if args.testaccount:
+        test_account_object()
         return
 
     session_manager, ticket = connect_to_quickbooks()
