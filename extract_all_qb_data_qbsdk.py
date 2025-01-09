@@ -15,6 +15,8 @@ from qbsdk.AccountQuery import AccountQueryRq, AccountQueryRs, Base as AccountBa
 from qbsdk.BillQuery import BillQueryRq, BillQueryRs, Base as BillBase
 from qbsdk.CheckQuery import CheckQueryRq, CheckQueryRs, Base as CheckBase
 from qbsdk.ClassQuery import ClassQueryRq, ClassQueryRs, Base as ClassBase
+from qbsdk.CompanyQuery import CompanyQueryRq, CompanyQueryRs, Base as CompanyBase
+from qbsdk.CreditCardChargeQuery import CreditCardChargeQueryRq, CreditCardChargeQueryRs, Base as CreditCardChargeBase
 
 
 def connect_to_quickbooks():
@@ -140,6 +142,48 @@ def test_class_object():
     debug_session = DebugSession()
     for cls in classQuery.classes:
         debug_session.add(cls)
+    debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
+
+
+def test_company_object():
+    companyQuery = CompanyQueryRq()
+    print("Requesting Company: \n", companyQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, companyQuery.to_xml())
+    print(response)
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    companyQuery.from_response_xml(response)
+    print("Company Objects: \n", companyQuery.companies)
+    CompanyBase.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for company in companyQuery.companies:
+        debug_session.add(company)
+    debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
+
+
+def test_cc_charge_object():
+    ccChargeQuery = CreditCardChargeQueryRq()
+    print("Requesting Credit Card Charge: \n", ccChargeQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, ccChargeQuery.to_xml())
+    print(response)
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    ccChargeQuery.from_response_xml(response)
+    print("Credit Card Charge Objects: \n", ccChargeQuery.cc_charges)
+    CreditCardChargeBase.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for cc_charge in ccChargeQuery.cc_charges:
+        debug_session.add(cc_charge)
     debug_session.commit()
     debug_session.close()
     close_connection(session_manager, ticket)
@@ -314,6 +358,8 @@ def main():
     parser.add_argument('-testbill', action='store_true', help='Test Bill object.')
     parser.add_argument('-testcheck', action='store_true', help='Test Check object.')
     parser.add_argument('-testclass', action='store_true', help='Test Class object.')
+    parser.add_argument('-testcompany', action='store_true', help='Test Company object.')
+    parser.add_argument('-testcccharge', action='store_true', help='Test Credit Card Charge object.')
     args = parser.parse_args()
 
     if args.help:
@@ -332,6 +378,8 @@ Options:
   -testbill    Test Bill object.
   -testcheck   Test Check object.
   -testclass   Test Class object.
+  -testcompany Test Company object.
+  -testcccharge Test Credit Card Charge object.
         """)
         return
 
@@ -357,6 +405,14 @@ Options:
 
     if args.testclass:
         test_class_object()
+        return
+
+    if args.testcompany:
+        test_company_object()
+        return
+
+    if args.testcccharge:
+        test_cc_charge_object()
         return
 
     session_manager, ticket = connect_to_quickbooks()
