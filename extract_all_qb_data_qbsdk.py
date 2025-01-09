@@ -12,6 +12,9 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Float
 
 from qbsdk.customerQuery import CustomerQueryRq, CustomerQueryRs, Base
 from qbsdk.AccountQuery import AccountQueryRq, AccountQueryRs, Base as AccountBase
+from qbsdk.BillQuery import BillQueryRq, BillQueryRs, Base as BillBase
+from qbsdk.CheckQuery import CheckQueryRq, CheckQueryRs, Base as CheckBase
+from qbsdk.ClassQuery import ClassQueryRq, ClassQueryRs, Base as ClassBase
 
 
 def connect_to_quickbooks():
@@ -74,6 +77,69 @@ def test_account_object():
     debug_session = DebugSession()
     for account in accountQuery.accounts:
         debug_session.add(account)
+    debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
+
+
+def test_bill_object():
+    billQuery = BillQueryRq()
+    print("Requesting Bill: \n", billQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, billQuery.to_xml())
+    print(response)
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    billQuery.from_response_xml(response)
+    print("Bill Objects: \n", billQuery.bills)
+    BillBase.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for bill in billQuery.bills:
+        debug_session.add(bill)
+    debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
+
+
+def test_check_object():
+    checkQuery = CheckQueryRq()
+    print("Requesting Check: \n", checkQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, checkQuery.to_xml())
+    print(response)
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    checkQuery.from_response_xml(response)
+    print("Check Objects: \n", checkQuery.checks)
+    CheckBase.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for check in checkQuery.checks:
+        debug_session.add(check)
+    debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
+
+
+def test_class_object():
+    classQuery = ClassQueryRq()
+    print("Requesting Class: \n", classQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, classQuery.to_xml())
+    print(response)
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    classQuery.from_response_xml(response)
+    print("Class Objects: \n", classQuery.classes)
+    ClassBase.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for cls in classQuery.classes:
+        debug_session.add(cls)
     debug_session.commit()
     debug_session.close()
     close_connection(session_manager, ticket)
@@ -245,6 +311,9 @@ def main():
     parser.add_argument('-testquery', action='store_true', help='Test QuickBooks query.')
     parser.add_argument('-testcustomer', action='store_true', help='Test Customer object.')
     parser.add_argument('-testaccount', action='store_true', help='Test Account object.')
+    parser.add_argument('-testbill', action='store_true', help='Test Bill object.')
+    parser.add_argument('-testcheck', action='store_true', help='Test Check object.')
+    parser.add_argument('-testclass', action='store_true', help='Test Class object.')
     args = parser.parse_args()
 
     if args.help:
@@ -260,6 +329,9 @@ Options:
   -testquery   Test QuickBooks query.
   -testcustomer Test Customer object.
   -testaccount Test Account object.
+  -testbill    Test Bill object.
+  -testcheck   Test Check object.
+  -testclass   Test Class object.
         """)
         return
 
@@ -273,6 +345,18 @@ Options:
 
     if args.testaccount:
         test_account_object()
+        return
+
+    if args.testbill:
+        test_bill_object()
+        return
+
+    if args.testcheck:
+        test_check_object()
+        return
+
+    if args.testclass:
+        test_class_object()
         return
 
     session_manager, ticket = connect_to_quickbooks()
