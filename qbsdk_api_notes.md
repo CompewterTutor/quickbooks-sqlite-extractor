@@ -1,4 +1,4 @@
-API Notes
+# API Notes
 
 ## AccountQuery
 
@@ -7,7 +7,7 @@ API Notes
 ### Response
 
 ### XMLOps
-'''xml
+'''
 <?xml version="1.0" encoding="utf-8"?>
 <?qbxml version="16.0"?>
 <QBXML>
