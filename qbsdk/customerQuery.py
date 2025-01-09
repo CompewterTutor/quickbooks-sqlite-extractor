@@ -1,247 +1,7 @@
-### XMLOps
-# ```
-# <?xml version="1.0" encoding="utf-8"?>
-# <?qbxml version="16.0"?>
-# <QBXML>
-#         <QBXMLMsgsRq onError="stopOnError">
-#                 <CustomerQueryRq metaData="ENUMTYPE" iterator="ENUMTYPE" iteratorID="UUIDTYPE">
-#                         <!-- BEGIN OR -->
-#                                 <ListID >IDTYPE</ListID> <!-- optional, may repeat -->
-#                         <!-- OR -->
-#                                 <FullName >STRTYPE</FullName> <!-- optional, may repeat -->
-#                         <!-- OR -->
-#                                 <MaxReturned >INTTYPE</MaxReturned> <!-- optional -->
-#                                 <!-- ActiveStatus may have one of the following values: ActiveOnly [DEFAULT], InactiveOnly, All -->
-#                                 <ActiveStatus >ENUMTYPE</ActiveStatus> <!-- optional -->
-#                                 <FromModifiedDate >DATETIMETYPE</FromModifiedDate> <!-- optional -->
-#                                 <ToModifiedDate >DATETIMETYPE</ToModifiedDate> <!-- optional -->
-#                                 <!-- BEGIN OR -->
-#                                         <NameFilter> <!-- optional -->
-#                                                 <!-- MatchCriterion may have one of the following values: StartsWith, Contains, EndsWith -->
-#                                                 <MatchCriterion >ENUMTYPE</MatchCriterion> <!-- required -->
-#                                                 <Name >STRTYPE</Name> <!-- required -->
-#                                         </NameFilter>
-#                                 <!-- OR -->
-#                                         <NameRangeFilter> <!-- optional -->
-#                                                 <FromName >STRTYPE</FromName> <!-- optional -->
-#                                                 <ToName >STRTYPE</ToName> <!-- optional -->
-#                                         </NameRangeFilter>
-#                                 <!-- END OR -->
-#                                 <TotalBalanceFilter> <!-- optional -->
-#                                         <!-- Operator may have one of the following values: LessThan, LessThanEqual, Equal, GreaterThan, GreaterThanEqual -->
-#                                         <Operator >ENUMTYPE</Operator> <!-- required -->
-#                                         <Amount >AMTTYPE</Amount> <!-- required -->
-#                                 </TotalBalanceFilter>
-#                                 <CurrencyFilter> <!-- optional -->
-#                                         <!-- BEGIN OR -->
-#                                                 <ListID >IDTYPE</ListID> <!-- optional, may repeat -->
-#                                         <!-- OR -->
-#                                                 <FullName >STRTYPE</FullName> <!-- optional, may repeat -->
-#                                         <!-- END OR -->
-#                                 </CurrencyFilter>
-#                                 <ClassFilter> <!-- optional -->
-#                                         <!-- BEGIN OR -->
-#                                                 <ListID >IDTYPE</ListID> <!-- optional, may repeat -->
-#                                         <!-- OR -->
-#                                                 <FullName >STRTYPE</FullName> <!-- optional, may repeat -->
-#                                         <!-- OR -->
-#                                                 <ListIDWithChildren >IDTYPE</ListIDWithChildren> <!-- optional -->
-#                                         <!-- OR -->
-#                                                 <FullNameWithChildren >STRTYPE</FullNameWithChildren> <!-- optional -->
-#                                         <!-- END OR -->
-#                                 </ClassFilter>
-#                         <!-- END OR -->
-#                         <IncludeRetElement >STRTYPE</IncludeRetElement> <!-- optional, may repeat -->
-#                         <OwnerID >GUIDTYPE</OwnerID> <!-- optional, may repeat -->
-#                 </CustomerQueryRq>
-
-#                 <CustomerQueryRs statusCode="INTTYPE" statusSeverity="STRTYPE" statusMessage="STRTYPE" retCount="INTTYPE" iteratorRemainingCount="INTTYPE" iteratorID="UUIDTYPE">
-#                         <CustomerRet> <!-- optional, may repeat -->
-#                                 <ListID >IDTYPE</ListID> <!-- required -->
-#                                 <TimeCreated >DATETIMETYPE</TimeCreated> <!-- required -->
-#                                 <TimeModified >DATETIMETYPE</TimeModified> <!-- required -->
-#                                 <EditSequence >STRTYPE</EditSequence> <!-- required -->
-#                                 <Name >STRTYPE</Name> <!-- required -->
-#                                 <FullName >STRTYPE</FullName> <!-- required -->
-#                                 <IsActive >BOOLTYPE</IsActive> <!-- optional -->
-#                                 <ClassRef> <!-- optional -->
-#                                         <ListID >IDTYPE</ListID> <!-- optional -->
-#                                         <FullName >STRTYPE</FullName> <!-- optional -->
-#                                 </ClassRef>
-#                                 <ParentRef> <!-- optional -->
-#                                         <ListID >IDTYPE</ListID> <!-- optional -->
-#                                         <FullName >STRTYPE</FullName> <!-- optional -->
-#                                 </ParentRef>
-#                                 <Sublevel >INTTYPE</Sublevel> <!-- required -->
-#                                 <CompanyName >STRTYPE</CompanyName> <!-- optional -->
-#                                 <Salutation >STRTYPE</Salutation> <!-- optional -->
-#                                 <FirstName >STRTYPE</FirstName> <!-- optional -->
-#                                 <MiddleName >STRTYPE</MiddleName> <!-- optional -->
-#                                 <LastName >STRTYPE</LastName> <!-- optional -->
-#                                 <JobTitle >STRTYPE</JobTitle> <!-- optional -->
-#                                 <BillAddress> <!-- optional -->
-#                                         <Addr1 >STRTYPE</Addr1> <!-- optional -->
-#                                         <Addr2 >STRTYPE</Addr2> <!-- optional -->
-#                                         <Addr3 >STRTYPE</Addr3> <!-- optional -->
-#                                         <Addr4 >STRTYPE</Addr4> <!-- optional -->
-#                                         <Addr5 >STRTYPE</Addr5> <!-- optional -->
-#                                         <City >STRTYPE</City> <!-- optional -->
-#                                         <State >STRTYPE</State> <!-- optional -->
-#                                         <PostalCode >STRTYPE</PostalCode> <!-- optional -->
-#                                         <Country >STRTYPE</Country> <!-- optional -->
-#                                         <Note >STRTYPE</Note> <!-- optional -->
-#                                 </BillAddress>
-#                                 <BillAddressBlock> <!-- optional -->
-#                                         <Addr1 >STRTYPE</Addr1> <!-- optional -->
-#                                         <Addr2 >STRTYPE</Addr2> <!-- optional -->
-#                                         <Addr3 >STRTYPE</Addr3> <!-- optional -->
-#                                         <Addr4 >STRTYPE</Addr4> <!-- optional -->
-#                                         <Addr5 >STRTYPE</Addr5> <!-- optional -->
-#                                 </BillAddressBlock>
-#                                 <ShipAddress> <!-- optional -->
-#                                         <Addr1 >STRTYPE</Addr1> <!-- optional -->
-#                                         <Addr2 >STRTYPE</Addr2> <!-- optional -->
-#                                         <Addr3 >STRTYPE</Addr3> <!-- optional -->
-#                                         <Addr4 >STRTYPE</Addr4> <!-- optional -->
-#                                         <Addr5 >STRTYPE</Addr5> <!-- optional -->
-#                                         <City >STRTYPE</City> <!-- optional -->
-#                                         <State >STRTYPE</State> <!-- optional -->
-#                                         <PostalCode >STRTYPE</PostalCode> <!-- optional -->
-#                                         <Country >STRTYPE</Country> <!-- optional -->
-#                                         <Note >STRTYPE</Note> <!-- optional -->
-#                                 </ShipAddress>
-#                                 <ShipAddressBlock> <!-- optional -->
-#                                         <Addr1 >STRTYPE</Addr1> <!-- optional -->
-#                                         <Addr2 >STRTYPE</Addr2> <!-- optional -->
-#                                         <Addr3 >STRTYPE</Addr3> <!-- optional -->
-#                                         <Addr4 >STRTYPE</Addr4> <!-- optional -->
-#                                         <Addr5 >STRTYPE</Addr5> <!-- optional -->
-#                                 </ShipAddressBlock>
-#                                 <ShipToAddress> <!-- must occur 0 - 50 times -->
-#                                         <Name >STRTYPE</Name> <!-- required -->
-#                                         <Addr1 >STRTYPE</Addr1> <!-- optional -->
-#                                         <Addr2 >STRTYPE</Addr2> <!-- optional -->
-#                                         <Addr3 >STRTYPE</Addr3> <!-- optional -->
-#                                         <Addr4 >STRTYPE</Addr4> <!-- optional -->
-#                                         <Addr5 >STRTYPE</Addr5> <!-- optional -->
-#                                         <City >STRTYPE</City> <!-- optional -->
-#                                         <State >STRTYPE</State> <!-- optional -->
-#                                         <PostalCode >STRTYPE</PostalCode> <!-- optional -->
-#                                         <Country >STRTYPE</Country> <!-- optional -->
-#                                         <Note >STRTYPE</Note> <!-- optional -->
-#                                         <DefaultShipTo >BOOLTYPE</DefaultShipTo> <!-- optional -->
-#                                 </ShipToAddress>
-#                                 <Phone >STRTYPE</Phone> <!-- optional -->
-#                                 <AltPhone >STRTYPE</AltPhone> <!-- optional -->
-#                                 <Fax >STRTYPE</Fax> <!-- optional -->
-#                                 <Email >STRTYPE</Email> <!-- optional -->
-#                                 <Cc >STRTYPE</Cc> <!-- optional -->
-#                                 <Contact >STRTYPE</Contact> <!-- optional -->
-#                                 <AltContact >STRTYPE</AltContact> <!-- optional -->
-#                                 <AdditionalContactRef> <!-- must occur 0 - 8 times -->
-#                                         <ContactName >STRTYPE</ContactName> <!-- required -->
-#                                         <ContactValue >STRTYPE</ContactValue> <!-- required -->
-#                                 </AdditionalContactRef>
-#                                 <ContactsRet> <!-- optional, may repeat -->
-#                                         <ListID >IDTYPE</ListID> <!-- required -->
-#                                         <TimeCreated >DATETIMETYPE</TimeCreated> <!-- required -->
-#                                         <TimeModified >DATETIMETYPE</TimeModified> <!-- required -->
-#                                         <EditSequence >STRTYPE</EditSequence> <!-- required -->
-#                                         <Contact >STRTYPE</Contact> <!-- optional -->
-#                                         <Salutation >STRTYPE</Salutation> <!-- optional -->
-#                                         <FirstName >STRTYPE</FirstName> <!-- required -->
-#                                         <MiddleName >STRTYPE</MiddleName> <!-- optional -->
-#                                         <LastName >STRTYPE</LastName> <!-- optional -->
-#                                         <JobTitle >STRTYPE</JobTitle> <!-- optional -->
-#                                         <AdditionalContactRef> <!-- must occur 0 - 5 times -->
-#                                                 <ContactName >STRTYPE</ContactName> <!-- required -->
-#                                                 <ContactValue >STRTYPE</ContactValue> <!-- required -->
-#                                         </AdditionalContactRef>
-#                                 </ContactsRet>
-#                                 <CustomerTypeRef> <!-- optional -->
-#                                         <ListID >IDTYPE</ListID> <!-- optional -->
-#                                         <FullName >STRTYPE</FullName> <!-- optional -->
-#                                 </CustomerTypeRef>
-#                                 <TermsRef> <!-- optional -->
-#                                         <ListID >IDTYPE</ListID> <!-- optional -->
-#                                         <FullName >STRTYPE</FullName> <!-- optional -->
-#                                 </TermsRef>
-#                                 <SalesRepRef> <!-- optional -->
-#                                         <ListID >IDTYPE</ListID> <!-- optional -->
-#                                         <FullName >STRTYPE</FullName> <!-- optional -->
-#                                 </SalesRepRef>
-#                                 <Balance >AMTTYPE</Balance> <!-- optional -->
-#                                 <TotalBalance >AMTTYPE</TotalBalance> <!-- optional -->
-#                                 <SalesTaxCodeRef> <!-- optional -->
-#                                         <ListID >IDTYPE</ListID> <!-- optional -->
-#                                         <FullName >STRTYPE</FullName> <!-- optional -->
-#                                 </SalesTaxCodeRef>
-#                                 <ItemSalesTaxRef> <!-- optional -->
-#                                         <ListID >IDTYPE</ListID> <!-- optional -->
-#                                         <FullName >STRTYPE</FullName> <!-- optional -->
-#                                 </ItemSalesTaxRef>
-#                                 <!-- SalesTaxCountry may have one of the following values: Australia, Canada [DEFAULT], UK, US -->
-#                                 <SalesTaxCountry >ENUMTYPE</SalesTaxCountry> <!-- optional -->
-#                                 <ResaleNumber >STRTYPE</ResaleNumber> <!-- optional -->
-#                                 <AccountNumber >STRTYPE</AccountNumber> <!-- optional -->
-#                                 <CreditLimit >AMTTYPE</CreditLimit> <!-- optional -->
-#                                 <PreferredPaymentMethodRef> <!-- optional -->
-#                                         <ListID >IDTYPE</ListID> <!-- optional -->
-#                                         <FullName >STRTYPE</FullName> <!-- optional -->
-#                                 </PreferredPaymentMethodRef>
-#                                 <CreditCardInfo> <!-- optional -->
-#                                         <CreditCardNumber >STRTYPE</CreditCardNumber> <!-- optional -->
-#                                         <ExpirationMonth >INTTYPE</ExpirationMonth> <!-- optional -->
-#                                         <ExpirationYear >INTTYPE</ExpirationYear> <!-- optional -->
-#                                         <NameOnCard >STRTYPE</NameOnCard> <!-- optional -->
-#                                         <CreditCardAddress >STRTYPE</CreditCardAddress> <!-- optional -->
-#                                         <CreditCardPostalCode >STRTYPE</CreditCardPostalCode> <!-- optional -->
-#                                 </CreditCardInfo>
-#                                 <!-- JobStatus may have one of the following values: Awarded, Closed, InProgress, None [DEFAULT], NotAwarded, Pending -->
-#                                 <JobStatus >ENUMTYPE</JobStatus> <!-- optional -->
-#                                 <JobStartDate >DATETYPE</JobStartDate> <!-- optional -->
-#                                 <JobProjectedEndDate >DATETYPE</JobProjectedEndDate> <!-- optional -->
-#                                 <JobEndDate >DATETYPE</JobEndDate> <!-- optional -->
-#                                 <JobDesc >STRTYPE</JobDesc> <!-- optional -->
-#                                 <JobTypeRef> <!-- optional -->
-#                                         <ListID >IDTYPE</ListID> <!-- optional -->
-#                                         <FullName >STRTYPE</FullName> <!-- optional -->
-#                                 </JobTypeRef>
-#                                 <Notes >STRTYPE</Notes> <!-- optional -->
-#                                 <AdditionalNotesRet> <!-- optional, may repeat -->
-#                                         <NoteID >INTTYPE</NoteID> <!-- required -->
-#                                         <Date >DATETYPE</Date> <!-- required -->
-#                                         <Note >STRTYPE</Note> <!-- required -->
-#                                 </AdditionalNotesRet>
-#                                 <!-- PreferredDeliveryMethod may have one of the following values: None [Default], Email, Fax -->
-#                                 <PreferredDeliveryMethod >ENUMTYPE</PreferredDeliveryMethod> <!-- optional -->
-#                                 <PriceLevelRef> <!-- optional -->
-#                                         <ListID >IDTYPE</ListID> <!-- optional -->
-#                                         <FullName >STRTYPE</FullName> <!-- optional -->
-#                                 </PriceLevelRef>
-#                                 <ExternalGUID >GUIDTYPE</ExternalGUID> <!-- optional -->
-#                                 <TaxRegistrationNumber >STRTYPE</TaxRegistrationNumber> <!-- optional -->
-#                                 <CurrencyRef> <!-- optional -->
-#                                         <ListID >IDTYPE</ListID> <!-- optional -->
-#                                         <FullName >STRTYPE</FullName> <!-- optional -->
-#                                 </CurrencyRef>
-#                                 <DataExtRet> <!-- optional, may repeat -->
-#                                         <OwnerID >GUIDTYPE</OwnerID> <!-- optional -->
-#                                         <DataExtName >STRTYPE</DataExtName> <!-- required -->
-#                                         <!-- DataExtType may have one of the following values: AMTTYPE, DATETIMETYPE, INTTYPE, PERCENTTYPE, PRICETYPE, QUANTYPE, STR1024TYPE, STR255TYPE -->
-#                                         <DataExtType >ENUMTYPE</DataExtType> <!-- required -->
-#                                         <DataExtValue >STRTYPE</DataExtValue> <!-- required -->
-#                                 </DataExtRet>
-#                         </CustomerRet>
-#                 </CustomerQueryRs>
-#         </QBXMLMsgsRq>
-# </QBXML>
-
 from enum import Enum
 from typing import List, Optional
 from datetime import datetime
-
-
+from lxml import etree
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -324,6 +84,7 @@ class CustomerQueryRq:
         self.total_balance_filter = total_balance_filter
         self.include_ret_element = include_ret_element
         self.owner_id = owner_id
+        self.customers = []
 
     def to_xml(self) -> str:
         xml = f'''<?xml version="1.0" encoding="utf-8"?>
@@ -380,6 +141,12 @@ class CustomerQueryRq:
         '''
         return xml
 
+    def from_response_xml(self, response_xml: str):
+        root = etree.fromstring(response_xml.encode('utf-8'))
+        customer_rets = root.findall('.//CustomerRet')
+        self.customers = [CustomerRet.from_xml(etree.tostring(customer_ret)) for customer_ret in customer_rets]
+        self.customers = [customer for customer in self.customers if customer is not None]
+
 from sqlalchemy import create_engine, Column, String, Integer, Float, Boolean, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -428,7 +195,7 @@ class CustomerRet(Base):
 
     @staticmethod
     def from_xml(xml_str: str):
-        root = etree.fromstring(xml_str.encode('utf-8'))
+        root = etree.fromstring(xml_str)  # Remove encode('utf-8')
         customer_ret = root.find('.//CustomerRet')
         if customer_ret is None:
             return None

@@ -5,6 +5,13 @@ import os
 
 import win32com.client  # COM interface
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, ForeignKey, Float
+
+from qbsdk.customerQuery import CustomerQueryRq, CustomerQueryRs, Base
+
 
 def connect_to_quickbooks():
     """Establish a connection to QuickBooks."""
@@ -24,6 +31,32 @@ def query_quickbooks(session_manager, ticket, request_xml):
     """Send qbXML request and get a response."""
     response = session_manager.ProcessRequest(ticket, request_xml)
     return response
+
+
+
+def test_customer_object():
+    customerQuery = CustomerQueryRq()
+    customerQuery.max_returned = 5
+    customerQuery.owner_id = 0
+    print("Requesting Customer: \n", customerQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, customerQuery.to_xml())
+    print(response)
+    
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    customerQuery.from_response_xml(response)
+    print("Customer Objects: \n", customerQuery.customers)
+    Base.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for customer in customerQuery.customers:
+        debug_session.add(customer)
+        debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
+
 
 
 def export_table_raw(session_manager, ticket, table_name, query_xml, sqlite_conn):
@@ -190,6 +223,7 @@ def main():
     parser.add_argument('-testconn', action='store_true', help='Test connection to QuickBooks.')
     parser.add_argument('-help', action='store_true', help='Show usage information.')
     parser.add_argument('-testquery', action='store_true', help='Test QuickBooks query.')
+    parser.add_argument('-testcustomer', action='store_true', help='Test Customer object.')
     args = parser.parse_args()
 
     if args.help:
@@ -202,11 +236,17 @@ Options:
   -both        Export both raw and 1NF data into two separate SQLite databases.
   -testconn    Test connection to QuickBooks.
   -help        Show this usage information.
+  -testquery   Test QuickBooks query.
+  -testcustomer Test Customer object.
         """)
         return
 
     if args.testconn:
         test_connection()
+        return
+
+    if args.testcustomer:
+        test_customer_object()
         return
 
     session_manager, ticket = connect_to_quickbooks()
