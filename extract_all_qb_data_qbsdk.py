@@ -21,6 +21,7 @@ from qbsdk.CreditCardCreditQuery import CreditCardCreditQueryRq, CreditCardCredi
 from qbsdk.CompanyActivityQuery import CompanyActivityQueryRq, CompanyActivityQueryRs, Base as CompanyActivityBase
 from qbsdk.CurrencyQuery import CurrencyQueryRq, CurrencyQueryRs, Base as CurrencyBase
 from qbsdk.CustomerMsgQuery import CustomerMsgQueryRq, CustomerMsgQueryRs, Base as CustomerMsgBase
+from qbsdk.CustomerTypeQuery import CustomerTypeQueryRq, CustomerTypeQueryRs, Base as CustomerTypeBase
 
 
 def connect_to_quickbooks():
@@ -433,6 +434,27 @@ def test_customer_msg_object():
     close_connection(session_manager, ticket)
 
 
+def test_customer_type_object():
+    customerTypeQuery = CustomerTypeQueryRq()
+    print("Requesting Customer Type: \n", customerTypeQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, customerTypeQuery.to_xml())
+    print(response)
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    customerTypeQuery.from_response_xml(response)
+    print("Customer Type Objects: \n", customerTypeQuery.customer_types)
+    CustomerTypeBase.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for customer_type in customerTypeQuery.customer_types:
+        debug_session.add(customer_type)
+    debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Export QuickBooks SDK data to SQLite", add_help=False)
     parser.add_argument('-raw', action='store_true', help='Export raw data as is.')
@@ -452,6 +474,7 @@ def main():
     parser.add_argument('-testcoactivity', action='store_true', help='Test Company Activity object.')
     parser.add_argument('-testcurrency', action='store_true', help='Test Currency object.')
     parser.add_argument('-testcustmsg', action='store_true', help='Test Customer Message object.')
+    parser.add_argument('-testcusttype', action='store_true', help='Test Customer Type object.')
     args = parser.parse_args()
 
     if args.help:
@@ -476,6 +499,7 @@ Options:
   -testcoactivity Test Company Activity object.
   -testcurrency Test Currency object.
   -testcustmsg Test Customer Message object.
+  -testcusttype Test Customer Type object.
         """)
         return
 
@@ -525,6 +549,10 @@ Options:
 
     if args.testcustmsg:
         test_customer_msg_object()
+        return
+
+    if args.testcusttype:
+        test_customer_type_object()
         return
 
     session_manager, ticket = connect_to_quickbooks()
