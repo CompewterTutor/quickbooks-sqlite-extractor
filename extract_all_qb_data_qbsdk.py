@@ -29,6 +29,7 @@ from qbsdk.EstimateQuery import EstimateQueryRq, EstimateQueryRs, Base as Estima
 from qbsdk.HostQuery import HostQueryRq, HostQueryRs, Base as HostBase
 from qbsdk.InventorySiteQuery import InventorySiteQueryRq, InventorySiteQueryRs, Base as InventorySiteBase
 from qbsdk.InvoiceQuery import InvoiceQueryRq, InvoiceQueryRs, Base as InvoiceBase
+from qbsdk.ItemDiscountQuery import ItemDiscountQueryRq, ItemDiscountQueryRs, Base as ItemDiscountBase
 
 
 def connect_to_quickbooks():
@@ -606,6 +607,26 @@ def test_invoice_object():
     debug_session.close()
     close_connection(session_manager, ticket)
 
+def test_item_discount_object():
+    itemDiscountQuery = ItemDiscountQueryRq()
+    print("Requesting Item Discount: \n", itemDiscountQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, itemDiscountQuery.to_xml())
+    print(response)
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    itemDiscountQuery.from_response_xml(response)
+    print("Item Discount Objects: \n", itemDiscountQuery.item_discounts)
+    ItemDiscountBase.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for item_discount in itemDiscountQuery.item_discounts:
+        debug_session.add(item_discount)
+    debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
+
 def main():
     parser = argparse.ArgumentParser(description="Export QuickBooks SDK data to SQLite", add_help=False)
     parser.add_argument('-raw', action='store_true', help='Export raw data as is.')
@@ -633,6 +654,7 @@ def main():
     parser.add_argument('-testhost', action='store_true', help='Test Host object.')
     parser.add_argument('-testinvsite', action='store_true', help='Test Inventory Site object.')
     parser.add_argument('-testinvoice', action='store_true', help='Test Invoice object.')
+    parser.add_argument('-testitemdisc', action='store_true', help='Test Item Discount object.')
     args = parser.parse_args()
 
     if args.help:
@@ -665,6 +687,7 @@ Options:
   -testhost Test Host object.
   -testinvsite Test Inventory Site object.
   -testinvoice Test Invoice object.
+  -testitemdisc Test Item Discount object.
         """)
         return
 
@@ -746,6 +769,10 @@ Options:
 
     if args.testinvoice:
         test_invoice_object()
+        return
+
+    if args.testitemdisc:
+        test_item_discount_object()
         return
 
     session_manager, ticket = connect_to_quickbooks()
