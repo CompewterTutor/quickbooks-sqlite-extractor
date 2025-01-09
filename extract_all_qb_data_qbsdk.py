@@ -125,7 +125,7 @@ def export_all_data(session_manager, ticket, sqlite_conn, normalize=False):
     queries = {
         "Customer": """
             <?xml version="1.0" ?>
-            <?qbxml version="13.0"?>
+            <?qbxml version="16.0"?>
             <QBXML>
                 <QBXMLMsgsRq onError="stopOnError">
                     <CustomerQueryRq>
@@ -136,7 +136,7 @@ def export_all_data(session_manager, ticket, sqlite_conn, normalize=False):
         """,
         "Vendor": """
             <?xml version="1.0" ?>
-            <?qbxml version="13.0"?>
+            <?qbxml version="16.0"?>
             <QBXML>
                 <QBXMLMsgsRq onError="stopOnError">
                     <VendorQueryRq>
@@ -172,6 +172,7 @@ def test_quickbooks_query():
     <QBXML>
         <QBXMLMsgsRq onError="stopOnError">
             <CustomerQueryRq>
+                <MaxReturned>5</MaxReturned>
                 <OwnerID>0</OwnerID>
             </CustomerQueryRq>
         </QBXMLMsgsRq>
