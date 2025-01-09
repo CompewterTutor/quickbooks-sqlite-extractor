@@ -325,6 +325,61 @@ class CustomerQueryRq:
         self.include_ret_element = include_ret_element
         self.owner_id = owner_id
 
+    def to_xml(self) -> str:
+        xml = f'''<?xml version="1.0" encoding="utf-8"?>
+<?qbxml version="16.0"?>
+<QBXML>
+    <QBXMLMsgsRq onError="stopOnError">
+        <CustomerQueryRq>
+    '''
+        if self.list_id:
+            for list_id in self.list_id:
+                xml += f'<ListID>{list_id}</ListID>'
+        if self.full_name:
+            for full_name in self.full_name:
+                xml += f'<FullName>{full_name}</FullName>'
+        if self.max_returned:
+            xml += f'<MaxReturned>{self.max_returned}</MaxReturned>'
+        if self.active_status:
+            xml += f'<ActiveStatus>{self.active_status.value}</ActiveStatus>'
+        if self.from_modified_date:
+            xml += f'<FromModifiedDate>{self.from_modified_date.isoformat()}</FromModifiedDate>'
+        if self.to_modified_date:
+            xml += f'<ToModifiedDate>{self.to_modified_date.isoformat()}</ToModifiedDate>'
+        if self.name_filter:
+            xml += f'''
+            <NameFilter>
+                <MatchCriterion>{self.name_filter.match_criterion.value}</MatchCriterion>
+                <Name>{self.name_filter.name}</Name>
+            </NameFilter>
+            '''
+        if self.name_range_filter:
+            xml += '<NameRangeFilter>'
+            if self.name_range_filter.from_name:
+                xml += f'<FromName>{self.name_range_filter.from_name}</FromName>'
+            if self.name_range_filter.to_name:
+                xml += f'<ToName>{self.name_range_filter.to_name}</ToName>'
+            xml += '</NameRangeFilter>'
+        if self.total_balance_filter:
+            xml += f'''
+            <TotalBalanceFilter>
+                <Operator>{self.total_balance_filter.operator.value}</Operator>
+                <Amount>{self.total_balance_filter.amount}</Amount>
+            </TotalBalanceFilter>
+            '''
+        if self.include_ret_element:
+            for element in self.include_ret_element:
+                xml += f'<IncludeRetElement>{element}</IncludeRetElement>'
+        if self.owner_id:
+            for owner_id in self.owner_id:
+                xml += f'<OwnerID>{owner_id}</OwnerID>'
+        xml += '''
+        </CustomerQueryRq>
+    </QBXMLMsgsRq>
+</QBXML>
+        '''
+        return xml
+
 from sqlalchemy import create_engine, Column, String, Integer, Float, Boolean, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
