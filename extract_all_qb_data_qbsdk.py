@@ -19,6 +19,8 @@ from qbsdk.CompanyQuery import CompanyQueryRq, CompanyQueryRs, Base as CompanyBa
 from qbsdk.CreditCardChargeQuery import CreditCardChargeQueryRq, CreditCardChargeQueryRs, Base as CreditCardChargeBase
 from qbsdk.CreditCardCreditQuery import CreditCardCreditQueryRq, CreditCardCreditQueryRs, Base as CreditCardCreditBase
 from qbsdk.CompanyActivityQuery import CompanyActivityQueryRq, CompanyActivityQueryRs, Base as CompanyActivityBase
+from qbsdk.CurrencyQuery import CurrencyQueryRq, CurrencyQueryRs, Base as CurrencyBase
+from qbsdk.CustomerMsgQuery import CustomerMsgQueryRq, CustomerMsgQueryRs, Base as CustomerMsgBase
 
 
 def connect_to_quickbooks():
@@ -233,6 +235,27 @@ def test_company_activity_object():
     close_connection(session_manager, ticket)
 
 
+def test_currency_object():
+    currencyQuery = CurrencyQueryRq()
+    print("Requesting Currency: \n", currencyQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, currencyQuery.to_xml())
+    print(response)
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    currencyQuery.from_response_xml(response)
+    print("Currency Objects: \n", currencyQuery.currencies)
+    CurrencyBase.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for currency in currencyQuery.currencies:
+        debug_session.add(currency)
+    debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
+
+
 def export_table_raw(session_manager, ticket, table_name, query_xml, sqlite_conn):
     """Export raw data from QuickBooks."""
     response = query_quickbooks(session_manager, ticket, query_xml)
@@ -389,6 +412,27 @@ def test_quickbooks_query():
     close_connection(session_manager, ticket)
 
 
+def test_customer_msg_object():
+    customerMsgQuery = CustomerMsgQueryRq()
+    print("Requesting Customer Message: \n", customerMsgQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, customerMsgQuery.to_xml())
+    print(response)
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    customerMsgQuery.from_response_xml(response)
+    print("Customer Message Objects: \n", customerMsgQuery.customer_msgs)
+    CustomerMsgBase.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for msg in customerMsgQuery.customer_msgs:
+        debug_session.add(msg)
+    debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Export QuickBooks SDK data to SQLite", add_help=False)
     parser.add_argument('-raw', action='store_true', help='Export raw data as is.')
@@ -406,6 +450,8 @@ def main():
     parser.add_argument('-testcccharge', action='store_true', help='Test Credit Card Charge object.')
     parser.add_argument('-testcccredit', action='store_true', help='Test Credit Card Credit object.')
     parser.add_argument('-testcoactivity', action='store_true', help='Test Company Activity object.')
+    parser.add_argument('-testcurrency', action='store_true', help='Test Currency object.')
+    parser.add_argument('-testcustmsg', action='store_true', help='Test Customer Message object.')
     args = parser.parse_args()
 
     if args.help:
@@ -428,6 +474,8 @@ Options:
   -testcccharge Test Credit Card Charge object.
   -testcccredit Test Credit Card Credit object.
   -testcoactivity Test Company Activity object.
+  -testcurrency Test Currency object.
+  -testcustmsg Test Customer Message object.
         """)
         return
 
@@ -469,6 +517,14 @@ Options:
 
     if args.testcoactivity:
         test_company_activity_object()
+        return
+
+    if args.testcurrency:
+        test_currency_object()
+        return
+
+    if args.testcustmsg:
+        test_customer_msg_object()
         return
 
     session_manager, ticket = connect_to_quickbooks()
