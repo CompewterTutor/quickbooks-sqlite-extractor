@@ -25,6 +25,10 @@ from qbsdk.CustomerTypeQuery import CustomerTypeQueryRq, CustomerTypeQueryRs, Ba
 from qbsdk.DepositQuery import DepositQueryRq, DepositQueryRs, Base as DepositBase
 from qbsdk.EmployeeQuery import EmployeeQueryRq, EmployeeQueryRs, Base as EmployeeBase
 from qbsdk.EntityQuery import EntityQueryRq, EntityQueryRs, Base as EntityBase
+from qbsdk.EstimateQuery import EstimateQueryRq, EstimateQueryRs, Base as EstimateBase
+from qbsdk.HostQuery import HostQueryRq, HostQueryRs, Base as HostBase
+from qbsdk.InventorySiteQuery import InventorySiteQueryRq, InventorySiteQueryRs, Base as InventorySiteBase
+from qbsdk.InvoiceQuery import InvoiceQueryRq, InvoiceQueryRs, Base as InvoiceBase
 
 
 def connect_to_quickbooks():
@@ -521,6 +525,87 @@ def test_entity_object():
     close_connection(session_manager, ticket)
 
 
+def test_estimate_object():
+    estimateQuery = EstimateQueryRq()
+    print("Requesting Estimate: \n", estimateQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, estimateQuery.to_xml())
+    print(response)
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    estimateQuery.from_response_xml(response)
+    print("Estimate Objects: \n", estimateQuery.estimates)
+    EstimateBase.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for estimate in estimateQuery.estimates:
+        debug_session.add(estimate)
+    debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
+
+
+def test_host_object():
+    hostQuery = HostQueryRq()
+    print("Requesting Host: \n", hostQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, hostQuery.to_xml())
+    print(response)
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    hostQuery.from_response_xml(response)
+    print("Host Objects: \n", hostQuery.hosts)
+    HostBase.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for host in hostQuery.hosts:
+        debug_session.add(host)
+    debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
+
+def test_inventory_site_object():
+    inventorySiteQuery = InventorySiteQueryRq()
+    print("Requesting Inventory Site: \n", inventorySiteQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, inventorySiteQuery.to_xml())
+    print(response)
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    inventorySiteQuery.from_response_xml(response)
+    print("Inventory Site Objects: \n", inventorySiteQuery.inventory_sites)
+    InventorySiteBase.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for inventory_site in inventorySiteQuery.inventory_sites:
+        debug_session.add(inventory_site)
+    debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
+
+def test_invoice_object():
+    invoiceQuery = InvoiceQueryRq()
+    print("Requesting Invoice: \n", invoiceQuery.to_xml())
+    # Connect to quickbooks and send xml
+    session_manager, ticket = connect_to_quickbooks()
+    response = query_quickbooks(session_manager, ticket, invoiceQuery.to_xml())
+    print(response)
+    debug_engine = create_engine('sqlite:///debug.db', echo=True)
+    invoiceQuery.from_response_xml(response)
+    print("Invoice Objects: \n", invoiceQuery.invoices)
+    InvoiceBase.metadata.create_all(debug_engine)
+
+    DebugSession = sessionmaker(bind=debug_engine)
+    debug_session = DebugSession()
+    for invoice in invoiceQuery.invoices:
+        debug_session.add(invoice)
+    debug_session.commit()
+    debug_session.close()
+    close_connection(session_manager, ticket)
+
 def main():
     parser = argparse.ArgumentParser(description="Export QuickBooks SDK data to SQLite", add_help=False)
     parser.add_argument('-raw', action='store_true', help='Export raw data as is.')
@@ -544,6 +629,10 @@ def main():
     parser.add_argument('-testdeposit', action='store_true', help='Test Deposit object.')
     parser.add_argument('-testemployee', action='store_true', help='Test Employee object.')
     parser.add_argument('-testentity', action='store_true', help='Test Entity object.')
+    parser.add_argument('-testestimate', action='store_true', help='Test Estimate object.')
+    parser.add_argument('-testhost', action='store_true', help='Test Host object.')
+    parser.add_argument('-testinvsite', action='store_true', help='Test Inventory Site object.')
+    parser.add_argument('-testinvoice', action='store_true', help='Test Invoice object.')
     args = parser.parse_args()
 
     if args.help:
@@ -572,6 +661,10 @@ Options:
   -testdeposit Test Deposit object.
   -testemployee Test Employee object.
   -testentity Test Entity object.
+  -testestimate Test Estimate object.
+  -testhost Test Host object.
+  -testinvsite Test Inventory Site object.
+  -testinvoice Test Invoice object.
         """)
         return
 
@@ -637,6 +730,22 @@ Options:
 
     if args.testentity:
         test_entity_object()
+        return
+
+    if args.testestimate:
+        test_estimate_object()
+        return
+
+    if args.testhost:
+        test_host_object()
+        return
+
+    if args.testinvsite:
+        test_inventory_site_object()
+        return
+
+    if args.testinvoice:
+        test_invoice_object()
         return
 
     session_manager, ticket = connect_to_quickbooks()
