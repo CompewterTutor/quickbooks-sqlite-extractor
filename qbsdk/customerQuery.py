@@ -195,8 +195,8 @@ class CustomerRet(Base):
 
     @staticmethod
     def from_xml(xml_str: str):
-        root = etree.fromstring(xml_str)  # Remove encode('utf-8')
-        customer_ret = root.find('.//CustomerRet')
+        root = etree.fromstring(xml_str)
+        customer_ret = root if root.tag == 'CustomerRet' else root.find('.//CustomerRet')
         if customer_ret is None:
             return None
 
@@ -206,13 +206,13 @@ class CustomerRet(Base):
 
         return CustomerRet(
             list_id=get_text(customer_ret, 'ListID'),
-            time_created=datetime.fromisoformat(get_text(customer_ret, 'TimeCreated')),
-            time_modified=datetime.fromisoformat(get_text(customer_ret, 'TimeModified')),
+            time_created=datetime.fromisoformat(get_text(customer_ret, 'TimeCreated')) if get_text(customer_ret, 'TimeCreated') else None,
+            time_modified=datetime.fromisoformat(get_text(customer_ret, 'TimeModified')) if get_text(customer_ret, 'TimeModified') else None,
             edit_sequence=get_text(customer_ret, 'EditSequence'),
             name=get_text(customer_ret, 'Name'),
             full_name=get_text(customer_ret, 'FullName'),
-            is_active=get_text(customer_ret, 'IsActive') == 'true',
-            sublevel=int(get_text(customer_ret, 'Sublevel')),
+            is_active=get_text(customer_ret, 'IsActive') == 'true' if get_text(customer_ret, 'IsActive') else None,
+            sublevel=int(get_text(customer_ret, 'Sublevel')) if get_text(customer_ret, 'Sublevel') else None,
             company_name=get_text(customer_ret, 'CompanyName'),
             salutation=get_text(customer_ret, 'Salutation'),
             first_name=get_text(customer_ret, 'FirstName'),
